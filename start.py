@@ -25,17 +25,7 @@ def callback(call):
     key = call.data
     if key == 'kosti_from_menu':
         kosti_games(call)
-    elif key == 'kosti_1':
-        kosti_games_part2(call, key)
-    elif key == 'kosti_2':
-        kosti_games_part2(call, key)
-    elif key == 'kosti_3':
-        kosti_games_part2(call, key)
-    elif key == 'kosti_4':
-        kosti_games_part2(call, key)
-    elif key == 'kosti_5':
-        kosti_games_part2(call, key)
-    elif key == 'kosti_6':
+    elif 'kosti_' in key:
         kosti_games_part2(call, key)
     elif 'contra' in key:
         kosti_games_part3(call, key)
@@ -59,10 +49,12 @@ def cmd_start(data):
 def cmd_menu(data):
     nickname = data['from']['username']
     count = msql.get_count(nickname)
+    id = msql.get_id(nickname)
     chat_id = data['from']['id']
     text_message = f"""
         Привет, @{nickname}.
-
+        
+        ID - {id}
         Баланс - {count}$ 
 
         /games
@@ -86,18 +78,8 @@ def kosti_games(call):
 
 def kosti_games_part2(call, key):
     data = call.message.json
-    if key == 'kosti_1':
-        answer = games.kosti_set_price(data, '1')
-    elif key == 'kosti_2':
-        answer = games.kosti_set_price(data, '2')
-    elif key == 'kosti_3':
-        answer = games.kosti_set_price(data, '3')
-    elif key == 'kosti_4':
-        answer = games.kosti_set_price(data, '4')
-    elif key == 'kosti_5':
-        answer = games.kosti_set_price(data, '5')
-    elif key == 'kosti_6':
-        answer = games.kosti_set_price(data, '6')
+    key_id = key.replace('kosti_', '')
+    answer = games.kosti_set_price(data, key_id)
     text_message = 'Сейчас выбери ставку из предложенных:\n\n*нажми 1 раз и жди*'
     #tbot.send_message(data['chat']['id'], text_message, reply_markup=answer)
     tbot.edit_message_text(text=text_message, message_id=data['message_id'], reply_markup=answer, chat_id=data['chat']['id'])
@@ -119,7 +101,7 @@ def kosti_games_part3(call, key):
             Поздравлю тебя, друг.\n
             Ты выйграл {price_1} денег
 
-            Твой новый баланс: {new_count}$
+            Твой баланс: {new_count}$
 
             главное меню - /menu
             """
@@ -132,14 +114,11 @@ def kosti_games_part3(call, key):
             Выпало {winner}, а ты поставил на {stavka}
             Ты проиграл {price} денег
 
-            Твой новый баланс: {new_count}$
+            Твой баланс: {new_count}$
 
             главное меню - /menu
             """
             tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
-
-
-    
 
 def send_message(chat_id, text_message):
     tbot.send_message(chat_id, text_message)

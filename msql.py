@@ -82,6 +82,21 @@ def get_count(nickname):
     db.close()
     return(result)
 
+def get_id(nickname):
+    sql = f"""
+    SELECT ID FROM USERS 
+    WHERE USER_NICKNAME='{nickname}'
+    """
+    db = connect_msql()
+    cursor = db.cursor()
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        print (e)
+    result = str(cursor.fetchall()[0][0])
+    db.close()
+    return(result)
+
 def get_kosti_set(nickname):
     sql = f"""
     SELECT KOSTI_SET FROM USERS 
