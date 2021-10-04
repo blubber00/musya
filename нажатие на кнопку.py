@@ -17,9 +17,9 @@
         'content_type': 'text', 
         'id': 81, 
         'message_id': 81, 
-        'from_user': <telebot.types.User object at 0x0000019E9F249A30>, 
+        'from_user': '<telebot.types.User object at 0x0000019E9F249A30>', 
         'date': 1633297027, 
-        'chat': <telebot.types.Chat object at 0x0000019E9F249A60>, 
+        'chat': '<telebot.types.Chat object at 0x0000019E9F249A60>', 
         'json': {
             'message_id': 81, 
             'from': {

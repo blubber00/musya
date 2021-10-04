@@ -81,7 +81,7 @@ def get_count(nickname):
         print (e)
     result = str(cursor.fetchall()[0][0])
     db.close()
-    return(result)
+    return(int(result))
 
 def get_count_by_id(id):
     sql = f"""
@@ -96,7 +96,7 @@ def get_count_by_id(id):
         print (e)
     result = str(cursor.fetchall()[0][0])
     db.close()
-    return(result)
+    return(int(result))
 
 def get_id(nickname):
     sql = f"""

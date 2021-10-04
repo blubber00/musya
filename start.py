@@ -18,8 +18,8 @@ tbot = telebot.TeleBot(api_token)
 @tbot.message_handler(content_types='text')
 def get_text(message):
     message = message.json
-    answer = sort_start(message)
     print(message['from']['username'] + ' - ' + message['text'])
+    answer = sort_start(message)
 
 @tbot.callback_query_handler(func=lambda call: True)
 def callback(call):
@@ -31,7 +31,6 @@ def callback(call):
     elif 'contra' in key:
         kosti_games_part3(call, key)
 
-
 def sort_start(data):
     message_text = data['text']
     message_split = message_text.split(' ')
@@ -41,9 +40,10 @@ def sort_start(data):
         cmd_menu(data)
     elif message_text == '/games':
         cmd_games(data)
+    elif message_text == '/perevod':
+        perevod_help(data)
     elif message_split[0].lower() == 'перевод':
         perevod(message_split, data)
-
 
 def cmd_start(data):
     if msql.cmd_start(data) == True:
@@ -62,7 +62,8 @@ def cmd_menu(data):
         ID - {id}
         Баланс - {count}$ 
 
-        /games
+        /games - тут ты можешь потерять все свои деньги
+        /perevod - подробнее о системе переводов
     """
     send_message(chat_id, text_message)
     
@@ -134,17 +135,35 @@ def perevod(message_split, data):
     except Exception as e:
         print (e)
     count_user_out = msql.get_count(data['from']['username'])
-    if int(count_user_out) >= int(count):
-        out_count = int(count_user_out) - int(count)
-        from_id = msql.get_chat_id(user_to)
-        user_out_id = msql.get_id(data['from']['username'])
-        if msql.set_new_count_by_id(user_out_id, out_count) == True:
-            to_count = msql.get_count_by_id(user_to)
-            new_count = int(to_count) + int(count)
-            if msql.set_new_count_by_id(user_to, new_count) == True:
-                send_message(chat_id=user_out, text_message=f'{count}$ были отправлены челику с ID - {user_to}')
-                send_message(chat_id=from_id, text_message=f'@{name1} перевел вам {count}$')
+    if count > 0:
+        if int(count_user_out) >= int(count):
+            out_count = int(count_user_out) - int(count)
+            from_id = msql.get_chat_id(user_to)
+            user_out_id = msql.get_id(data['from']['username'])
+            if msql.set_new_count_by_id(user_out_id, out_count) == True:
+                to_count = msql.get_count_by_id(user_to)
+                new_count = int(to_count) + int(count)
+                if msql.set_new_count_by_id(user_to, new_count) == True:
+                    send_message(chat_id=user_out, text_message=f'{count}$ были отправлены челику с ID - {user_to}')
+                    send_message(chat_id=from_id, text_message=f'@{name1} перевел вам {count}$')
+        else:send_message(chat_id=user_out, text_message='Возвращайся с деньгами!')
 
+    else:
+        send_message(chat_id=user_out, text_message='Слыш, ты че? Самый умный?')
+
+def perevod_help(data):
+    text_message = """
+    Сейчас я научу тебя делать переводы.
+    Чтобы перевести кому-то деньги, тебе нужно узнать ID этого персонажа
+    Узнать ты можешь, просто спросив его. Он указан в /menu
+    Нужно написать "перевод", затем ID и далее сумму
+    Сумма пишется без точек, запятых и сокращений по типу 10к, 25кк и т.д.
+
+    Пример отправки:
+
+    Перевод 1 15000
+    """
+    send_message(data['from']['id'], text_message)
 
 def send_message(chat_id, text_message):
     tbot.send_message(chat_id, text_message)
