@@ -18,10 +18,10 @@ def cmd_start(message):
         new_id = int(get_last_count()) + 1
         sql = f"""
         INSERT INTO USERS(
-            ID, COUNT, USER_NICKNAME, KOSTI_SET, CHAT_ID
+            ID, COUNT, USER_NICKNAME, KOSTI_SET, CHAT_ID, MINES, MINES_OK_COUNT
         ) 
         VALUES (
-            '{new_id}', '1500', '{nickname}', '0', {chat_id}
+            '{new_id}', '1500', '{nickname}', '0', '{chat_id}', '0', '0'
         )
         """
         db = connect_msql()
@@ -165,6 +165,69 @@ def get_chat_id(id):
     sql = f"""
     SELECT CHAT_ID FROM USERS 
     WHERE ID='{id}'
+    """
+    db = connect_msql()
+    cursor = db.cursor()
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        print (e)
+    result = str(cursor.fetchall()[0][0])
+    db.close()
+    return(result)
+
+def set_new_mines(nickname, param):
+    sql = f"""
+    UPDATE USERS SET MINES='{param}' WHERE USER_NICKNAME='{nickname}'
+    """
+    db = connect_msql()
+    cursor = db.cursor()
+    cursor.execute(sql)
+    db.commit()
+    db.close()
+    set_mines_ok_none(nickname)
+    return True
+
+def set_mines_ok_none(nickname):
+    sql = f"""
+    UPDATE USERS SET MINES_COUNT_OK='0' WHERE USER_NICKNAME='{nickname}'
+    """
+    db = connect_msql()
+    cursor = db.cursor()
+    cursor.execute(sql)
+    db.commit()
+    db.close()
+
+def get_mines_ok_count(nickname):
+    sql = f"""
+    SELECT MINES_COUNT_OK FROM USERS 
+    WHERE USER_NICKNAME='{nickname}'
+    """
+    db = connect_msql()
+    cursor = db.cursor()
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        print (e)
+    result = str(cursor.fetchall()[0][0])
+    db.close()
+    return(result)
+
+def set_mines_ok_count(nickname, count):
+    sql = f"""
+    UPDATE USERS SET MINES_COUNT_OK='{count}' WHERE USER_NICKNAME='{nickname}'
+    """
+    db = connect_msql()
+    cursor = db.cursor()
+    cursor.execute(sql)
+    db.commit()
+    db.close()
+    return True
+
+def get_mines_list(nickname):
+    sql = f"""
+    SELECT MINES FROM USERS 
+    WHERE USER_NICKNAME='{nickname}'
     """
     db = connect_msql()
     cursor = db.cursor()

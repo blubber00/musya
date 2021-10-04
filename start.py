@@ -30,6 +30,13 @@ def callback(call):
         kosti_games_part2(call, key)
     elif 'contra' in key:
         kosti_games_part3(call, key)
+    elif 'miness' in key:
+        mine_game_part2(call, key)
+    elif key == 'mines_start':
+        mines_start(call)
+    elif key == 'mines_start_button':
+        game_mines(call)
+
 
 def sort_start(data):
     message_text = data['text']
@@ -73,7 +80,8 @@ def cmd_games(data):
     """
     markup = telebot.types.InlineKeyboardMarkup()
     button_1 = telebot.types.InlineKeyboardButton(text='Кости', callback_data='kosti_from_menu')
-    markup.add(button_1)
+    button_2 = telebot.types.InlineKeyboardButton(text='Подрывник', callback_data='mines_start_button')
+    markup.add(button_1, button_2)
     tbot.send_message(chat_id=data['from']['id'], text=text_message, reply_markup=markup)
 
 def kosti_games(call):
@@ -164,6 +172,103 @@ def perevod_help(data):
     Перевод 1 15000
     """
     send_message(data['from']['id'], text_message)
+
+def game_mines(call):
+    data = call.message.json
+    text_message = """
+    В этой игре тебе нужно угадать
+    в каких клетках нет мин.
+    Режим по умолчанию хардкор
+    Поле 3*3 клетки
+    3 мины
+    Как только ты отметишь все клетки без мин, получишь награду
+    
+    Играем?
+    """
+    markup = telebot.types.InlineKeyboardMarkup()
+    button = telebot.types.InlineKeyboardButton(text='Да!', callback_data='mines_start')
+    markup.add(button)
+    tbot.send_message(data['chat']['id'], text_message, reply_markup=markup)
+
+def mines_start(call):
+    data = call.message.json
+    mark = games.mines_start(data)
+    text_message = 'Удачи!'
+    tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=mark)
+
+def mine_game_part2(call, key):
+    data = call.message.json
+    nickname = data['chat']['username']
+    all_pole_list = data['reply_markup']['inline_keyboard']
+    slovar_mines = {
+        'miness1-1':'1-1',
+        'miness1-2':'1-2',
+        'miness1-3':'1-3',
+        'miness2-1':'2-1',
+        'miness2-2':'2-2',
+        'miness2-3':'2-3',
+        'miness3-1':'3-1',
+        'miness3-2':'3-2',
+        'miness3-3':'3-3'
+    }
+    shot = slovar_mines[key]
+    mines_srt_ver = msql.get_mines_list(nickname)
+    mines_list = mines_srt_ver.split('!')
+    if shot in mines_list:
+        text_message = """
+        Ты подорвался на мине!
+        Повезет в другой раз.
+        """
+        markup = telebot.types.InlineKeyboardMarkup()
+        button = telebot.types.InlineKeyboardButton(text='Еще раз подорваться', callback_data='mines_start_button')
+        markup.add(button)
+        tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
+    else:
+        new_text = '⚪️'
+        old_text = '❔'
+        list1 = []
+        list2 = []
+        list3 = []
+        for button_info in all_pole_list[0]:
+            if button_info['callback_data'] == key:
+                list1.append(telebot.types.InlineKeyboardButton(text=new_text, callback_data='123'))
+            elif button_info['text'] == '⚪️':
+                list1.append(telebot.types.InlineKeyboardButton(text=new_text, callback_data=button_info['callback_data']))
+            else:
+                list1.append(telebot.types.InlineKeyboardButton(text=old_text, callback_data=button_info['callback_data']))
+        for button_info in all_pole_list[1]:
+            if button_info['callback_data'] == key:
+                list2.append(telebot.types.InlineKeyboardButton(text=new_text, callback_data='123'))
+            elif button_info['text'] == '⚪️':
+                list2.append(telebot.types.InlineKeyboardButton(text=new_text, callback_data=button_info['callback_data']))
+            else:
+                list2.append(telebot.types.InlineKeyboardButton(text=old_text, callback_data=button_info['callback_data']))
+        for button_info in all_pole_list[2]:
+            if button_info['callback_data'] == key:
+                list3.append(telebot.types.InlineKeyboardButton(text=new_text, callback_data='123'))
+            elif button_info['text'] == '⚪️':
+                list3.append(telebot.types.InlineKeyboardButton(text=new_text, callback_data=button_info['callback_data']))
+            else:
+                list3.append(telebot.types.InlineKeyboardButton(text=old_text, callback_data=button_info['callback_data']))
+        markup = telebot.types.InlineKeyboardMarkup(keyboard=(list1, list2, list3))
+        tbot.edit_message_text(chat_id=data['chat']['id'], text='Удачи!', message_id=data['message_id'], reply_markup=markup)
+        mines_ok_count = msql.get_mines_ok_count(nickname)
+        count = int(mines_ok_count) + 1
+        msql.set_mines_ok_count(nickname, count)
+        mines_count = msql.get_mines_ok_count(nickname)
+        if int(mines_count) == 6:
+            money = msql.get_count(nickname) + 5000
+            msql.set_new_count(nickname, money)
+            new_money = msql.get_count(nickname)
+            text_message = f"""
+            Поздравляю, ты победил!
+            Приз 5000$ заслужил
+            Твой баланс: {new_money}$
+            """
+            tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'])
+
+
+    
 
 def send_message(chat_id, text_message):
     tbot.send_message(chat_id, text_message)
