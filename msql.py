@@ -13,14 +13,15 @@ def connect_msql():
 
 def cmd_start(message):
     nickname = message['from']['username']
+    chat_id = message['from']['id']
     if check_account(nickname) == False:
         new_id = int(get_last_count()) + 1
         sql = f"""
         INSERT INTO USERS(
-            ID, COUNT, USER_NICKNAME, KOSTI_SET
+            ID, COUNT, USER_NICKNAME, KOSTI_SET, CHAT_ID
         ) 
         VALUES (
-            '{new_id}', '1500', '{nickname}', '0'
+            '{new_id}', '1500', '{nickname}', '0', {chat_id}
         )
         """
         db = connect_msql()
@@ -71,6 +72,21 @@ def get_count(nickname):
     sql = f"""
     SELECT COUNT FROM USERS 
     WHERE USER_NICKNAME='{nickname}'
+    """
+    db = connect_msql()
+    cursor = db.cursor()
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        print (e)
+    result = str(cursor.fetchall()[0][0])
+    db.close()
+    return(result)
+
+def get_count_by_id(id):
+    sql = f"""
+    SELECT COUNT FROM USERS 
+    WHERE ID='{id}'
     """
     db = connect_msql()
     cursor = db.cursor()
@@ -133,6 +149,32 @@ def set_new_count(nickname, count):
     db.commit()
     db.close()
     return True
+
+def set_new_count_by_id(id, count):
+    sql = f"""
+    UPDATE USERS SET COUNT='{count}' WHERE ID='{id}'
+    """
+    db = connect_msql()
+    cursor = db.cursor()
+    cursor.execute(sql)
+    db.commit()
+    db.close()
+    return True
+
+def get_chat_id(id):
+    sql = f"""
+    SELECT CHAT_ID FROM USERS 
+    WHERE ID='{id}'
+    """
+    db = connect_msql()
+    cursor = db.cursor()
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        print (e)
+    result = str(cursor.fetchall()[0][0])
+    db.close()
+    return(result)
 
 def test():
     sql = """

@@ -1,5 +1,6 @@
 from random import randint, random
 import telebot
+from telebot.apihelper import send_message
 import msql
 from settings import api_token
 import text
@@ -33,12 +34,16 @@ def callback(call):
 
 def sort_start(data):
     message_text = data['text']
+    message_split = message_text.split(' ')
     if message_text == '/start':
         cmd_start(data)
     elif message_text == '/menu':
         cmd_menu(data)
     elif message_text == '/games':
         cmd_games(data)
+    elif message_split[0].lower() == 'перевод':
+        perevod(message_split, data)
+
 
 def cmd_start(data):
     if msql.cmd_start(data) == True:
@@ -119,6 +124,27 @@ def kosti_games_part3(call, key):
             главное меню - /menu
             """
             tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
+
+def perevod(message_split, data):
+    name1 = data['from']['username']
+    try:
+        user_out = data['from']['id']
+        user_to = int(message_split[1])
+        count = int(message_split[2])
+    except Exception as e:
+        print (e)
+    count_user_out = msql.get_count(data['from']['username'])
+    if int(count_user_out) >= int(count):
+        out_count = int(count_user_out) - int(count)
+        from_id = msql.get_chat_id(user_to)
+        user_out_id = msql.get_id(data['from']['username'])
+        if msql.set_new_count_by_id(user_out_id, out_count) == True:
+            to_count = msql.get_count_by_id(user_to)
+            new_count = int(to_count) + int(count)
+            if msql.set_new_count_by_id(user_to, new_count) == True:
+                send_message(chat_id=user_out, text_message=f'{count}$ были отправлены челику с ID - {user_to}')
+                send_message(chat_id=from_id, text_message=f'@{name1} перевел вам {count}$')
+
 
 def send_message(chat_id, text_message):
     tbot.send_message(chat_id, text_message)
