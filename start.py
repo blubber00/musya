@@ -37,7 +37,6 @@ def callback(call):
     elif key == 'mines_start_button':
         game_mines(call)
 
-
 def sort_start(data):
     message_text = data['text']
     message_split = message_text.split(' ')
@@ -215,9 +214,18 @@ def mine_game_part2(call, key):
     mines_srt_ver = msql.get_mines_list(nickname)
     mines_list = mines_srt_ver.split('!')
     if shot in mines_list:
-        text_message = """
+        count_ok = int(msql.get_mines_ok_count(nickname))
+        dop_money = 0
+        if count_ok > 0:
+            dop_money = dop_money + (count_ok * 100)
+            count_now = msql.get_count(nickname)
+            count_new = int(count_now) + int(dop_money)
+            msql.set_new_count(nickname, count_new)
+        text_message = f"""
         Ты подорвался на мине!
         Повезет в другой раз.
+
+        За открытые клетки даю тебе {dop_money}$
         """
         markup = telebot.types.InlineKeyboardMarkup()
         button = telebot.types.InlineKeyboardButton(text='Еще раз подорваться', callback_data='mines_start_button')
@@ -266,9 +274,6 @@ def mine_game_part2(call, key):
             Твой баланс: {new_money}$
             """
             tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'])
-
-
-    
 
 def send_message(chat_id, text_message):
     tbot.send_message(chat_id, text_message)
