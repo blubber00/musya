@@ -99,7 +99,7 @@ def kosti_games(call):
     data = call.message.json
     text_message = 'Выбери число, на которое хочешь поставить:\n\n*нажми 1 раз и жди*'
     markup = games.kosti_gen6keys()
-    tbot.send_message(data['chat']['id'], text_message, reply_markup=markup)
+    tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
 
 def kosti_games_part2(call, key):
     data = call.message.json
