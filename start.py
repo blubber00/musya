@@ -51,6 +51,8 @@ def sort_start(data):
         cmd_games(data)
     elif message_text == '/perevod':
         perevod_help(data)
+    elif message_text== '/contacts':
+        cmd_about(data)
     elif message_split[0].lower() == 'перевод':
         perevod(message_split, data)
 
@@ -59,6 +61,11 @@ def cmd_start(data):
         chat_id = data['from']['id']
         text_message = text.hello_text()
         send_message(chat_id, text_message)
+
+def cmd_about(data):
+    text_message = text.info()
+    chat_id = data['from']['id']
+    send_message(chat_id, text_message)
 
 def cmd_menu(data):
     nickname = data['from']['username']
@@ -73,6 +80,8 @@ def cmd_menu(data):
 
         /games - тут ты можешь потерять все свои деньги
         /perevod - подробнее о системе переводов
+
+        /contacts - контакты разработчика
     """
     send_message(chat_id, text_message)
     
