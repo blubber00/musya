@@ -105,7 +105,14 @@ def kosti_games_part2(call, key):
     data = call.message.json
     key_id = key.replace('kosti_', '')
     answer = games.kosti_set_price(data, key_id)
-    text_message = 'Сейчас выбери ставку из предложенных:\n\n*нажми 1 раз и жди*'
+    nickname = data['chat']['username']
+    money = msql.get_count(nickname)
+    text_message = f"""
+    Сейчас выбери ставку из предложенных:
+    
+    Твой баланс - {money}$
+
+    *нажми 1 раз и жди*"""
     #tbot.send_message(data['chat']['id'], text_message, reply_markup=answer)
     tbot.edit_message_text(text=text_message, message_id=data['message_id'], reply_markup=answer, chat_id=data['chat']['id'])
 
@@ -199,7 +206,8 @@ def game_mines(call):
     markup = telebot.types.InlineKeyboardMarkup()
     button = telebot.types.InlineKeyboardButton(text='Да!', callback_data='mines_start')
     markup.add(button)
-    tbot.send_message(data['chat']['id'], text_message, reply_markup=markup)
+    tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
+    #tbot.send_message(data['chat']['id'], text_message, reply_markup=markup)
 
 def mines_start(call):
     data = call.message.json
@@ -218,6 +226,7 @@ def mines_game_part2(call, key):
     count_ok = int(key_sort[4])
     if shot in mines_list:
         dop_money = 0
+        count_new = msql.get_count(nickname)
         if count_ok > 0:
             dop_money = dop_money + (count_ok * 100)
             count_now = msql.get_count(nickname)
@@ -228,6 +237,9 @@ def mines_game_part2(call, key):
         Повезет в другой раз.
 
         За открытые клетки даю тебе {dop_money}$
+        Твой баланс: {str(count_new)}$
+
+        /menu - основное меню
         """
         markup = telebot.types.InlineKeyboardMarkup()
         button = telebot.types.InlineKeyboardButton(text='Еще раз подорваться', callback_data='mines_start_button')
@@ -271,7 +283,10 @@ def mines_game_part2(call, key):
             Приз 5000$ заслужил
             Твой баланс: {new_money}$
             """
-            tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'])
+            markup = telebot.types.InlineKeyboardMarkup()
+            button = telebot.types.InlineKeyboardButton(text='Еще играем!', callback_data='mines_start_button')
+            markup.add(button)
+            tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
 
 def send_message(chat_id, text_message):
     tbot.send_message(chat_id, text_message)
