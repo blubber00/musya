@@ -30,32 +30,33 @@ def kosti_set_price(data, set):
         return markup
 
 def mines_start(data):
+    nickname = data['chat']['username']
+    mines_list = add_mines_in_bd(data)
     list1 = [
-        telebot.types.InlineKeyboardButton(text='❔', callback_data='miness1-1'),
-        telebot.types.InlineKeyboardButton(text='❔', callback_data='miness1-2'),
-        telebot.types.InlineKeyboardButton(text='❔', callback_data='miness1-3')
+        telebot.types.InlineKeyboardButton(text='❔', callback_data='mine_game|1-1' + '|' + nickname + '|' + mines_list + '|' + '0'),
+        telebot.types.InlineKeyboardButton(text='❔', callback_data='mine_game|1-2' + '|' + nickname + '|' + mines_list + '|' + '0'),
+        telebot.types.InlineKeyboardButton(text='❔', callback_data='mine_game|1-3' + '|' + nickname + '|' + mines_list + '|' + '0')
     ]
     list2 = [
-        telebot.types.InlineKeyboardButton(text='❔', callback_data='miness2-1'),
-        telebot.types.InlineKeyboardButton(text='❔', callback_data='miness2-2'),
-        telebot.types.InlineKeyboardButton(text='❔', callback_data='miness2-3')
+        telebot.types.InlineKeyboardButton(text='❔', callback_data='mine_game|2-1' + '|' + nickname + '|' + mines_list + '|' + '0'),
+        telebot.types.InlineKeyboardButton(text='❔', callback_data='mine_game|2-2' + '|' + nickname + '|' + mines_list + '|' + '0'),
+        telebot.types.InlineKeyboardButton(text='❔', callback_data='mine_game|2-3' + '|' + nickname + '|' + mines_list + '|' + '0')
     ]
     list3 = [
-        telebot.types.InlineKeyboardButton(text='❔', callback_data='miness3-1'),
-        telebot.types.InlineKeyboardButton(text='❔', callback_data='miness3-2'),
-        telebot.types.InlineKeyboardButton(text='❔', callback_data='miness3-3')
+        telebot.types.InlineKeyboardButton(text='❔', callback_data='mine_game|3-1' + '|' + nickname + '|' + mines_list + '|' + '0'),
+        telebot.types.InlineKeyboardButton(text='❔', callback_data='mine_game|3-2' + '|' + nickname + '|' + mines_list + '|' + '0'),
+        telebot.types.InlineKeyboardButton(text='❔', callback_data='mine_game|3-3' + '|' + nickname + '|' + mines_list + '|' + '0')
     ]
     markup = telebot.types.InlineKeyboardMarkup(keyboard=(list1, list2, list3))
-    if add_mines_in_bd(data) == True:
-        return(markup)
+    return(markup)
 
 def add_mines_in_bd(data):
     nickname = data['chat']['username']
     list = ['1-1', '1-2', '1-3', '2-1', '2-2', '2-3', '3-1', '3-2', '3-3']
     random.shuffle(list)
     mines_list = list[0] + '!' + list[1] + '!' + list[2]
-    if msql.set_new_mines(nickname, mines_list) == True:
-        return True
+    print(nickname + ' - ' + mines_list)
+    return mines_list
 
 
 

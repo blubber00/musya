@@ -30,8 +30,11 @@ def callback(call):
         kosti_games_part2(call, key)
     elif 'contra' in key:
         kosti_games_part3(call, key)
-    elif 'miness' in key:
-        mine_game_part2(call, key)
+    elif 'mine_game' in key:
+        key_list = key.split('|')
+        nickname = call.message.json['chat']['username']
+        if key_list[2] == nickname:
+            mines_game_part2(call, key)
     elif key == 'mines_start':
         mines_start(call)
     elif key == 'mines_start_button':
@@ -195,26 +198,16 @@ def mines_start(call):
     text_message = 'Удачи!'
     tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=mark)
 
-def mine_game_part2(call, key):
+def mines_game_part2(call, key):
     data = call.message.json
     nickname = data['chat']['username']
     all_pole_list = data['reply_markup']['inline_keyboard']
-    slovar_mines = {
-        'miness1-1':'1-1',
-        'miness1-2':'1-2',
-        'miness1-3':'1-3',
-        'miness2-1':'2-1',
-        'miness2-2':'2-2',
-        'miness2-3':'2-3',
-        'miness3-1':'3-1',
-        'miness3-2':'3-2',
-        'miness3-3':'3-3'
-    }
-    shot = slovar_mines[key]
-    mines_srt_ver = msql.get_mines_list(nickname)
-    mines_list = mines_srt_ver.split('!')
+    key_sort = key.split('|')
+    shot = key_sort[1]
+    mines_list_srting_version = key_sort[3]
+    mines_list = mines_list_srting_version.split('!')
+    count_ok = int(key_sort[4])
     if shot in mines_list:
-        count_ok = int(msql.get_mines_ok_count(nickname))
         dop_money = 0
         if count_ok > 0:
             dop_money = dop_money + (count_ok * 100)
@@ -243,28 +236,24 @@ def mine_game_part2(call, key):
             elif button_info['text'] == '⚪️':
                 list1.append(telebot.types.InlineKeyboardButton(text=new_text, callback_data=button_info['callback_data']))
             else:
-                list1.append(telebot.types.InlineKeyboardButton(text=old_text, callback_data=button_info['callback_data']))
+                list1.append(telebot.types.InlineKeyboardButton(text=old_text, callback_data=new_callback_data(button_info['callback_data'])))
         for button_info in all_pole_list[1]:
             if button_info['callback_data'] == key:
                 list2.append(telebot.types.InlineKeyboardButton(text=new_text, callback_data='123'))
             elif button_info['text'] == '⚪️':
                 list2.append(telebot.types.InlineKeyboardButton(text=new_text, callback_data=button_info['callback_data']))
             else:
-                list2.append(telebot.types.InlineKeyboardButton(text=old_text, callback_data=button_info['callback_data']))
+                list2.append(telebot.types.InlineKeyboardButton(text=old_text, callback_data=new_callback_data(button_info['callback_data'])))
         for button_info in all_pole_list[2]:
             if button_info['callback_data'] == key:
                 list3.append(telebot.types.InlineKeyboardButton(text=new_text, callback_data='123'))
             elif button_info['text'] == '⚪️':
                 list3.append(telebot.types.InlineKeyboardButton(text=new_text, callback_data=button_info['callback_data']))
             else:
-                list3.append(telebot.types.InlineKeyboardButton(text=old_text, callback_data=button_info['callback_data']))
+                list3.append(telebot.types.InlineKeyboardButton(text=old_text, callback_data=new_callback_data(button_info['callback_data'])))
         markup = telebot.types.InlineKeyboardMarkup(keyboard=(list1, list2, list3))
         tbot.edit_message_text(chat_id=data['chat']['id'], text='Удачи!', message_id=data['message_id'], reply_markup=markup)
-        mines_ok_count = msql.get_mines_ok_count(nickname)
-        count = int(mines_ok_count) + 1
-        msql.set_mines_ok_count(nickname, count)
-        mines_count = msql.get_mines_ok_count(nickname)
-        if int(mines_count) == 6:
+        if int(count_ok) == 5:
             money = msql.get_count(nickname) + 5000
             msql.set_new_count(nickname, money)
             new_money = msql.get_count(nickname)
@@ -277,6 +266,14 @@ def mine_game_part2(call, key):
 
 def send_message(chat_id, text_message):
     tbot.send_message(chat_id, text_message)
+
+def new_callback_data(old_keys):
+    spisok_data = old_keys.split('|')
+    old_count_data = spisok_data[4]
+    new_count_data = int(old_count_data) + 1
+    new_data = spisok_data[0] + '|' + spisok_data[1] + '|' + spisok_data[2] + '|' + spisok_data[3] + '|' + str(new_count_data)
+    return(new_data)
+    
 
 try:
     tbot.infinity_polling()
