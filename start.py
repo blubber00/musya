@@ -6,6 +6,7 @@ from settings import api_token
 import text
 import games
 import random
+import prikol
 
 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 print('Вас приветствует Musya Bot')
@@ -55,6 +56,18 @@ def sort_start(data):
         cmd_about(data)
     elif message_split[0].lower() == 'перевод':
         perevod(message_split, data)
+    elif message_text == '/prikol':
+        cmd_prikol(data)
+    else:
+        razgovor(data)
+
+def razgovor(data):
+    print('1')
+
+def cmd_prikol(data):
+    text_message = prikol.start()
+    chat_id = data['from']['id']
+    send_message(chat_id, text_message)
 
 def cmd_start(data):
     if msql.cmd_start(data) == True:
@@ -80,6 +93,7 @@ def cmd_menu(data):
 
         /games - тут ты можешь потерять все свои деньги
         /perevod - подробнее о системе переводов
+        /prikol - подключил что-то по API, но кажется херня
 
         /contacts - контакты разработчика
     """
