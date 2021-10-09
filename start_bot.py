@@ -303,3 +303,7 @@ def new_callback_data(old_keys):
     new_data = spisok_data[0] + '|' + spisok_data[1] + '|' + spisok_data[2] + '|' + spisok_data[3] + '|' + str(new_count_data)
     return(new_data)
     
+def out_of_rande(data):
+    text_message = 'Вы ввели неверный ID'
+    chat_id = data['message']['from']['id']
+    send_message(chat_id, text_message)

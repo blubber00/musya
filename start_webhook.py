@@ -11,7 +11,12 @@ app = Flask(__name__)
 def index():
     if request.method == 'POST':
         r = request.get_json()
-        start_musya(r)
+        try:
+            start_musya(r)
+        except IndexError as e:
+            print(e)
+            start_bot.out_of_rande(r)
+            return('<Response 200>')
         return('<Response 200>')
     return('<h1>Hello bot</h1>')
 
