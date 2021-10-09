@@ -8,3 +8,10 @@ host_mysql1 = ''
 user_mysql1 = 'u7rwHVymRm'
 password_mysql1 = ''
 db_mysql1 = 'u7rwHVymRm'
+
+nasa_api_key = ''
+
+url_token = ''
+deployment_id = ''
+
+forwarding = '' #URL сервера для получения Webhook

@@ -16,15 +16,12 @@ print('Токен авторизации: ' + api_token)
 
 tbot = telebot.TeleBot(api_token)
 
-@tbot.message_handler(content_types='text')
 def get_text(message):
-    message = message.json
     print(message['from']['username'] + ' - ' + message['text'])
-    answer = sort_start(message)
+    sort_start(message)
 
-@tbot.callback_query_handler(func=lambda call: True)
-def callback(call):
-    key = call.data
+def callback_query_sort(call):
+    key = call['data']
     if key == 'kosti_from_menu':
         kosti_games(call)
     elif 'kosti_' in key:
@@ -33,7 +30,7 @@ def callback(call):
         kosti_games_part3(call, key)
     elif 'mine_game' in key:
         key_list = key.split('|')
-        nickname = call.message.json['chat']['username']
+        nickname = call['from']['username']
         if key_list[2] == nickname:
             mines_game_part2(call, key)
     elif key == 'mines_start':
@@ -109,17 +106,15 @@ def cmd_games(data):
     markup.add(button_1, button_2)
     tbot.send_message(chat_id=data['from']['id'], text=text_message, reply_markup=markup)
 
-def kosti_games(call):
-    data = call.message.json
+def kosti_games(data):
     text_message = 'Выбери число, на которое хочешь поставить:\n\n*нажми 1 раз и жди*'
     markup = games.kosti_gen6keys()
-    tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
+    tbot.edit_message_text(chat_id=data['from']['id'], text=text_message, message_id=data['message']['message_id'], reply_markup=markup)
 
-def kosti_games_part2(call, key):
-    data = call.message.json
+def kosti_games_part2(data, key):
     key_id = key.replace('kosti_', '')
     answer = games.kosti_set_price(data, key_id)
-    nickname = data['chat']['username']
+    nickname = data['from']['username']
     money = msql.get_count(nickname)
     text_message = f"""
     Сейчас выбери ставку из предложенных:
@@ -128,21 +123,20 @@ def kosti_games_part2(call, key):
 
     *нажми 1 раз и жди*"""
     #tbot.send_message(data['chat']['id'], text_message, reply_markup=answer)
-    tbot.edit_message_text(text=text_message, message_id=data['message_id'], reply_markup=answer, chat_id=data['chat']['id'])
+    tbot.edit_message_text(text=text_message, message_id=data['message']['message_id'], reply_markup=answer, chat_id=data['from']['id'])
 
-def kosti_games_part3(call, key):
-    data = call.message.json
+def kosti_games_part3(data, key):
     price = int(key.replace('_contra', ''))
-    stavka = int(msql.get_kosti_set(data['chat']['username']))
+    stavka = int(msql.get_kosti_set(data['from']['username']))
     winner = random.randint(1, 6)
-    old_count = int(msql.get_count(data['chat']['username']))
+    old_count = int(msql.get_count(data['from']['username']))
     markup = telebot.types.InlineKeyboardMarkup()
     button_1 = telebot.types.InlineKeyboardButton(text='ХОЧУ ЕЩЕ!', callback_data='kosti_from_menu')
     markup.add(button_1)
     if stavka == winner:
         new_count = old_count + price * 8
         price_1 = price * 8
-        if msql.set_new_count(data['chat']['username'], new_count) == True:
+        if msql.set_new_count(data['from']['username'], new_count) == True:
             text_message = f"""
             Поздравлю тебя, друг.\n
             Ты выйграл {price_1} денег
@@ -151,10 +145,10 @@ def kosti_games_part3(call, key):
 
             главное меню - /menu
             """
-            tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
+            tbot.edit_message_text(chat_id=data['from']['id'], text=text_message, message_id=data['message']['message_id'], reply_markup=markup)
     else:
         new_count = old_count - price
-        if msql.set_new_count(data['chat']['username'], new_count) == True:
+        if msql.set_new_count(data['from']['username'], new_count) == True:
             text_message = f"""
             К сожалению, ты продул...\n
             Выпало {winner}, а ты поставил на {stavka}
@@ -164,7 +158,7 @@ def kosti_games_part3(call, key):
 
             главное меню - /menu
             """
-            tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
+            tbot.edit_message_text(chat_id=data['from']['id'], text=text_message, message_id=data['message']['message_id'], reply_markup=markup)
 
 def perevod(message_split, data):
     name1 = data['from']['username']
@@ -205,8 +199,7 @@ def perevod_help(data):
     """
     send_message(data['from']['id'], text_message)
 
-def game_mines(call):
-    data = call.message.json
+def game_mines(data):
     text_message = """
     В этой игре тебе нужно угадать
     в каких клетках нет мин.
@@ -220,19 +213,17 @@ def game_mines(call):
     markup = telebot.types.InlineKeyboardMarkup()
     button = telebot.types.InlineKeyboardButton(text='Да!', callback_data='mines_start')
     markup.add(button)
-    tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
+    tbot.edit_message_text(chat_id=data['from']['id'], text=text_message, message_id=data['message']['message_id'], reply_markup=markup)
     #tbot.send_message(data['chat']['id'], text_message, reply_markup=markup)
 
-def mines_start(call):
-    data = call.message.json
+def mines_start(data):
     mark = games.mines_start(data)
     text_message = 'Удачи!'
-    tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=mark)
+    tbot.edit_message_text(chat_id=data['from']['id'], text=text_message, message_id=data['message']['message_id'], reply_markup=mark)
 
-def mines_game_part2(call, key):
-    data = call.message.json
-    nickname = data['chat']['username']
-    all_pole_list = data['reply_markup']['inline_keyboard']
+def mines_game_part2(data, key):
+    nickname = data['from']['username']
+    all_pole_list = data['message']['reply_markup']['inline_keyboard']
     key_sort = key.split('|')
     shot = key_sort[1]
     mines_list_srting_version = key_sort[3]
@@ -258,7 +249,7 @@ def mines_game_part2(call, key):
         markup = telebot.types.InlineKeyboardMarkup()
         button = telebot.types.InlineKeyboardButton(text='Еще раз подорваться', callback_data='mines_start_button')
         markup.add(button)
-        tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
+        tbot.edit_message_text(chat_id=data['from']['id'], text=text_message, message_id=data['message']['message_id'], reply_markup=markup)
     else:
         new_text = '⚪️'
         old_text = '❔'
@@ -287,7 +278,7 @@ def mines_game_part2(call, key):
             else:
                 list3.append(telebot.types.InlineKeyboardButton(text=old_text, callback_data=new_callback_data(button_info['callback_data'])))
         markup = telebot.types.InlineKeyboardMarkup(keyboard=(list1, list2, list3))
-        tbot.edit_message_text(chat_id=data['chat']['id'], text='Удачи!', message_id=data['message_id'], reply_markup=markup)
+        tbot.edit_message_text(chat_id=data['from']['id'], text='Удачи!', message_id=data['message']['message_id'], reply_markup=markup)
         if int(count_ok) == 5:
             money = msql.get_count(nickname) + 5000
             msql.set_new_count(nickname, money)
@@ -300,7 +291,7 @@ def mines_game_part2(call, key):
             markup = telebot.types.InlineKeyboardMarkup()
             button = telebot.types.InlineKeyboardButton(text='Еще играем!', callback_data='mines_start_button')
             markup.add(button)
-            tbot.edit_message_text(chat_id=data['chat']['id'], text=text_message, message_id=data['message_id'], reply_markup=markup)
+            tbot.edit_message_text(chat_id=data['from']['id'], text=text_message, message_id=data['message']['message_id'], reply_markup=markup)
 
 def send_message(chat_id, text_message):
     tbot.send_message(chat_id, text_message)
@@ -312,8 +303,3 @@ def new_callback_data(old_keys):
     new_data = spisok_data[0] + '|' + spisok_data[1] + '|' + spisok_data[2] + '|' + spisok_data[3] + '|' + str(new_count_data)
     return(new_data)
     
-
-try:
-    tbot.infinity_polling()
-except Exception:
-    print('reload')

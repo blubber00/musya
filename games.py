@@ -16,7 +16,7 @@ def kosti_gen6keys():
     return markup
 
 def kosti_set_price(data, set):
-    username = data['chat']['username']
+    username = data['from']['username']
     count = msql.get_count(username)
     if msql.kosti_set_price(username, set) == True:
         price_1 = int(count) / 5
@@ -44,7 +44,7 @@ def kosti_set_price(data, set):
         return markup
 
 def mines_start(data):
-    nickname = data['chat']['username']
+    nickname = data['from']['username']
     mines_list = add_mines_in_bd(data)
     list1 = [
         telebot.types.InlineKeyboardButton(text='❔', callback_data='mine_game|1-1' + '|' + nickname + '|' + mines_list + '|' + '0'),
@@ -65,14 +65,12 @@ def mines_start(data):
     return(markup)
 
 def add_mines_in_bd(data):
-    nickname = data['chat']['username']
+    nickname = data['from']['username']
     list = ['1-1', '1-2', '1-3', '2-1', '2-2', '2-3', '3-1', '3-2', '3-3']
     random.shuffle(list)
     mines_list = list[0] + '!' + list[1] + '!' + list[2]
     print(nickname + ' - ' + mines_list)
     return mines_list
-
-
 
 
 #print(mines_list.split('!'))
