@@ -187,6 +187,20 @@ def set_new_mines(nickname, param):
     db.close()
     return True
 
+def get_top_10():
+    sql = """
+    SELECT * FROM `USERS` ORDER BY COUNT DESC LIMIT 10
+    """
+    db = connect_msql()
+    cursor = db.cursor()
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        print (e)
+    result = str(cursor.fetchall())
+    db.close()
+    return(eval(result))
+
 def test():
     sql = """
     INSERT INTO USERS(

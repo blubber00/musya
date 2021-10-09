@@ -55,8 +55,20 @@ def sort_start(data):
         perevod(message_split, data)
     elif message_text == '/prikol':
         cmd_prikol(data)
+    elif message_text == '/top':
+        cmd_top_10(data)
     else:
         razgovor(data)
+
+def cmd_top_10(data):
+    top_list = msql.get_top_10()
+    text_message = """
+    Топ-10 игроков по балансу:\n\n
+    """
+    for player in top_list:
+        text_message = text_message + '@' + player[2] + ' - ' + player[1] + '$\n'
+    chat_id = data['from']['id']
+    send_message(chat_id, text_message)
 
 def razgovor(data):
     print('1')
@@ -88,6 +100,7 @@ def cmd_menu(data):
         ID - {id}
         Баланс - {count}$ 
 
+        /top - топ-10 игроков по балансу
         /games - тут ты можешь потерять все свои деньги
         /perevod - подробнее о системе переводов
         /prikol - подключил что-то по API, но кажется херня

@@ -13,9 +13,8 @@ def index():
         r = request.get_json()
         try:
             start_musya(r)
-        except IndexError as e:
+        except Exception as e:
             print(e)
-            start_bot.out_of_rande(r)
             return('<Response 200>')
         return('<Response 200>')
     return('<h1>Hello bot</h1>')
