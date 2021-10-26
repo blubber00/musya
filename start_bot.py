@@ -66,7 +66,7 @@ def cmd_top_10(data):
     Топ-10 игроков по балансу:\n\n
     """
     for player in top_list:
-        text_message = text_message + '@' + player[2] + ' - ' + player[1] + '$\n'
+        text_message = text_message + '@' + player[2] + ' - ' + str(player[1]) + '$\n'
     chat_id = data['from']['id']
     send_message(chat_id, text_message)
 
